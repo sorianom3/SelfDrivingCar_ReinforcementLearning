@@ -425,6 +425,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="imgui.ini" />
     <None Include="Libraries\include\glm\detail\func_common.inl" />
     <None Include="Libraries\include\glm\detail\func_common_simd.inl" />
     <None Include="Libraries\include\glm\detail\func_exponential.inl" />
@@ -560,6 +561,9 @@
     <None Include="Libraries\include\glm\gtx\vector_query.inl" />
     <None Include="Libraries\include\glm\gtx\wrap.inl" />
     <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\car.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,7 +5,7 @@ float randFloat(float min, float max) {
 	return min + static_cast<float>(rand()) / RAND_MAX * (max - min);
 }
 RaceTrack::RaceTrack(float width, float height) {
-
+	srand(0);
 	float radiusX = width * 0.25;
 	float radiusY = height * 0.25;
 
@@ -20,12 +20,12 @@ RaceTrack::RaceTrack(float width, float height) {
 		float tempRadiusY = radiusY + (randFloat(-70.0f, 70.0f) * irregularity * 2 - irregularity);
 		
 		innerPoints[i] = {
-			tempRadiusX* cosf(theta) + (width * 0.5f),
-			tempRadiusY* sinf(theta) + (height * 0.5f)
+			tempRadiusX * cosf(theta) + (width * 0.5f),
+			tempRadiusY * sinf(theta) + (height * 0.5f)
 		};
 		outerPoints[i] = {
-			(tempRadiusX + 100.0f) *cosf(theta) + (width * 0.5f),
-			(tempRadiusY + 100.0f)* sinf(theta) + (height * 0.5f)
+			(tempRadiusX + 100.0f) * cosf(theta) + (width * 0.5f),
+			(tempRadiusY + 100.0f) * sinf(theta) + (height * 0.5f)
 		};
 	}
 	innerPoints[checkPointCount] = innerPoints[0];
@@ -45,6 +45,8 @@ void RaceTrack::draw() {
 }
 
 bool RaceTrack::checkIfCarCollided(Car car) {
+
+	bool isHit = false;
 
 	return false;
 }

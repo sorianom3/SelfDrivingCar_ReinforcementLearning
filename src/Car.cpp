@@ -1,17 +1,34 @@
 #include "Car.hpp"
 vec2 UP = { 0.0f, 1.0f };
-Car::Car(float scrWidth, float scrHeight) {
-	pos = { scrWidth / 2.0f, scrHeight / 2.0f };
+Car::Car(vec2 startingPoint) {
+	
+	texture = LoadTexture("../Assets/car.png");
+
+	pos = startingPoint;
 	vel = { 0.0f,0.0f };
 	acc = { 0.0f,0.0f };
 	input = { 0.0f,0.0f };
-	rotation = 0.0f;
+	rotation = 90.0f;
 }
 
 void Car::draw() {
 	carBody.x = pos.x;
 	carBody.y = pos.y;
-	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f },rotation, RED);
+	Rectangle src = {
+		0,
+		0,
+		texture.width,
+		texture.height
+	};
+	//DrawTexturePro(texture, src, carBody,{ carBody.width * 0.5f, carBody.height * 0.5f }, rotation,WHITE);
+
+	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rotation, (hasCollided)? RED : GREEN);
+}
+
+void Car::reset(vec2 point) {
+	pos = point;
+	vel *= 0.0f;
+	rotation = 0;
 }
 
 void Car::update(float dt) {

@@ -14,8 +14,8 @@
 //GAME Variable
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 800;
-Car car(SCR_WIDTH,SCR_HEIGHT);
 RaceTrack track(SCR_WIDTH, SCR_HEIGHT);
+Car car({ track.innerPoints[0].x + 35.0f , track.innerPoints[0].y });
 
 void simulate() {
     car.update(GetFrameTime());
@@ -41,9 +41,8 @@ void drawDebug() {
             ImGui::DragFloat("Turn Speed", &car.turnSpeed, 1, 50.0f, 500.0f);
             ImGui::DragFloat("Drag", &car.dragCo, 0.001f, 0.001f, 1.0f);
             if(ImGui::Button("Reset")) {
-                car.pos = { SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f };
-                car.vel *= 0.0f;
-                car.rotation = 0;
+                car.reset({ track.innerPoints[0].x + 35.0f , track.innerPoints[0].y});
+                car.rotation = 90;
             }
             ImGui::EndTabItem();
         }

@@ -13,6 +13,7 @@ private:
 public:
 	
 	bool isAIControl = false;
+	Texture2D texture;
 
 	Rectangle carBody = {
 		0.0f,
@@ -23,6 +24,7 @@ public:
 	vec2 pos;
 	vec2 vel;
 	vec2 acc;
+	bool hasCollided = false;
 	float turnSpeed = 165.0f;
 	float speed = 10.0f;
 	float maxSpeed = 15.0f;
@@ -31,10 +33,11 @@ public:
 	Input input;
 
 
-	Car(float scrWidth, float scrHeight);
+	Car(vec2 startingPoint);
 	void draw();
 	void updateInput();
 	void update(float dt);
+	void reset(vec2 point);
 
 };
 

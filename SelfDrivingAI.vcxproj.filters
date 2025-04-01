@@ -1230,5 +1230,11 @@
     </None>
     <None Include="README.md" />
     <None Include=".gitignore" />
+    <None Include="imgui.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\car.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

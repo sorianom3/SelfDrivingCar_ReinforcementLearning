@@ -7,13 +7,15 @@
 #include <imgui/imgui_stdlib.h>
 #include <raylib.h>
 #include "Car.hpp"
+#include "RaceTrack.hpp"
 #include <string>
 #include <format>
 
 //GAME Variable
 const int SCR_WIDTH = 800;
-const int SCR_HEIGHT = 600;
+const int SCR_HEIGHT = 800;
 Car car(SCR_WIDTH,SCR_HEIGHT);
+RaceTrack track(SCR_WIDTH, SCR_HEIGHT);
 
 void simulate() {
     car.update(GetFrameTime());
@@ -45,18 +47,26 @@ void drawDebug() {
             }
             ImGui::EndTabItem();
         }
+
+        if (ImGui::BeginTabItem("Track Info")) {
+            if (ImGui::Button("Recreate")) {
+                track = RaceTrack(SCR_WIDTH, SCR_HEIGHT);
+            }
+            ImGui::EndTabItem();
+        }
         ImGui::EndTabBar();
     }
     ImGui::End();
     rlImGuiEnd();
 }
+
 void render(Camera2D mainCamera) {
     BeginDrawing();
     BeginMode2D(mainCamera);
 
     ClearBackground(BLACK);
     car.draw();
-
+    track.draw();
     EndMode2D();
     drawDebug();
     EndDrawing();

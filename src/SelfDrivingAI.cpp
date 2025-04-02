@@ -19,6 +19,7 @@ Car car({ track.innerPoints[0].x + 35.0f , track.innerPoints[0].y });
 
 void simulate() {
     car.update(GetFrameTime());
+    track.checkIfCarCollided(car);
 }
 
 void drawDebug() {

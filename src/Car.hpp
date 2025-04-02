@@ -1,6 +1,7 @@
 #pragma once
 #include <raylib.h>
 #include <glm/glm.hpp>
+#include <vector>
 
 using namespace glm;
 class Car
@@ -14,6 +15,8 @@ public:
 	
 	bool isAIControl = false;
 	Texture2D texture;
+
+	std::vector<vec2> hitBox;
 
 	Rectangle carBody = {
 		0.0f,
@@ -38,6 +41,7 @@ public:
 	void updateInput();
 	void update(float dt);
 	void reset(vec2 point);
+	std::vector<vec2> getRotatedHitBox();
 
 };
 

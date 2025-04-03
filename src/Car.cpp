@@ -12,12 +12,12 @@ Car::Car(vec2 startingPoint) {
 	input = { 0.0f,0.0f };
 	rotation = 45.0f;
 
-	hitBox = std::vector<vec2>(4);
+	hitBox = vector<vec2>(4);
 	
 
 }
 
-std::vector<vec2> Car::getRotatedHitBox() {
+vector<vec2> Car::getRotatedHitBox() {
 
 	return rotatePoints(hitBox, pos, rotation);
 }
@@ -50,7 +50,7 @@ void Car::reset(vec2 point) {
 	rotation = 0;
 }
 
-void Car::update(float dt) {
+void Car::update(float dt, vector<vec4> worldSegments) {
 	
 	rotation += (input.turn * turnSpeed * dt);
 	rotation = fmodf(rotation, 360.0f);
@@ -74,8 +74,35 @@ void Car::update(float dt) {
 	hitBox[2] = { pos.x + carBody.width * 0.5f, pos.y + carBody.height * 0.5f };
 	hitBox[3] = { pos.x - carBody.width * 0.5f, pos.y + carBody.height * 0.5f };
 
+	checkCollideWithWall(worldSegments);
 }
 
+void Car::checkCollideWithWall(vector<vec4> worldSegments) {
+	auto carHitBox = getRotatedHitBox();
+	hasCollided = false;
+	for (int i = 0; i < worldSegments.size() - 1; i++) {
+		auto a1 = vec2(worldSegments[i].x, worldSegments[i].y);
+		auto b1 = vec2(worldSegments[i].z, worldSegments[i].w);
+
+		auto m = b1 - a1;
+
+		for (int j = 0; j < carHitBox.size(); j++) {
+			int k = (j == carHitBox.size() - 1) ? 0 : j + 1;
+			auto c = carHitBox[j];
+			auto d = carHitBox[k];
+			auto n = d - c;
+
+			//check inner interections
+			float t2 = ((c.y - a1.y) * m.x + (a1.x - c.x) * m.y) / cross2D(n, m);
+			float t1 = (c.x + n.x * t2 - a1.x) / m.x;
+
+			hasCollided = hasCollided || (t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1);
+
+			if (hasCollided) break;
+		}
+		if (hasCollided) break;
+	}
+}
 void Car::updateInput() {
 	if (isAIControl) {
 

@@ -1,7 +1,9 @@
 #pragma once
-#include "Car.hpp"
+#include <raylib.h>
+#include <glm/glm.hpp>
 #include <vector>
 using namespace std;
+using namespace glm;
 
 class RaceTrack
 {
@@ -10,8 +12,6 @@ class RaceTrack
 		vector<vec4> worldSegments;
 		RaceTrack(float width, float height);
 		void draw();
-		
-		bool checkIfCarCollided(Car& car);
 
 };
  

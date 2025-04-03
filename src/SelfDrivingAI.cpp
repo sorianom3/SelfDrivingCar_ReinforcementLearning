@@ -20,8 +20,7 @@ Car car({ track.worldSegments[0].x + 35.0f , track.worldSegments[0].y });
 bool isPlaying = true;
 
 void simulate() {
-    car.update(GetFrameTime());
-    track.checkIfCarCollided(car);
+    car.update(GetFrameTime(), track.worldSegments);
 }
 
 void drawDebug() {

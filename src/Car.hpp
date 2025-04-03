@@ -4,6 +4,9 @@
 #include <vector>
 
 using namespace glm;
+using namespace std;
+
+
 class Car
 {
 private:
@@ -11,11 +14,12 @@ private:
 		float turn;
 		float drive;
 	};
+
 public:
 	bool isAIControl = false;
 	Texture2D texture;
 
-	std::vector<vec2> hitBox;
+	vector<vec2> hitBox;
 
 	Rectangle carBody = {
 		0.0f,
@@ -38,9 +42,10 @@ public:
 	Car(vec2 startingPoint);
 	void draw();
 	void updateInput();
-	void update(float dt);
+	void update(float dt, vector<vec4> worldSegments);
+	void checkCollideWithWall(vector<vec4> worldSegments);
 	void reset(vec2 point);
-	std::vector<vec2> getRotatedHitBox();
+	vector<vec2> getRotatedHitBox();
 
 };
 

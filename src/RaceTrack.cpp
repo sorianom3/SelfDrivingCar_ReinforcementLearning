@@ -56,34 +56,3 @@ void RaceTrack::draw() {
 	}
 }
 
-
-
-bool RaceTrack::checkIfCarCollided(Car& car) {
-
-	bool isHit = false;
-	auto carHitBox = car.getRotatedHitBox();
-	for (int i = 0; i < worldSegments.size() - 1; i++) {
-		auto a1 = vec2(worldSegments[i].x, worldSegments[i].y);
-		auto b1 = vec2(worldSegments[i].z, worldSegments[i].w);
-		
-		auto m = b1 - a1;
-		
-		for (int j = 0; j < carHitBox.size(); j++) {
-			int k = (j == carHitBox.size() - 1) ? 0 : j + 1;
-			auto c = carHitBox[j];
-			auto d = carHitBox[k];
-			auto n = d - c;
-			
-			//check inner interections
-			float t2 = ((c.y - a1.y) * m.x + (a1.x - c.x) * m.y) / cross2D(n, m);
-			float t1 = (c.x + n.x * t2 - a1.x) / m.x;
-
-			isHit = isHit || (t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1);
-
-			if (isHit) break;
-		}
-		if (isHit) break;
-	}
-	car.hasCollided = isHit;
-	return isHit;
-}

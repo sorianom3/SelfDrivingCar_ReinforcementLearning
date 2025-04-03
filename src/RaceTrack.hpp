@@ -10,6 +10,7 @@ class RaceTrack
 
 	public:
 		vector<vec4> worldSegments;
+		vector<vec4> checkpointSegments;
 		RaceTrack(float width, float height);
 		void draw();
 

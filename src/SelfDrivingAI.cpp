@@ -34,13 +34,12 @@ void drawDebug() {
             ImGui::Text(text.c_str());
             text = std::format("Velocity {}, {}", car.vel.x, car.vel.y);
             ImGui::Text(text.c_str());
-            text = std::format("Velocity Mag {}", car.vel.x* car.vel.x + car.vel.y* car.vel.y);
+            text = std::format("Velocity Mag {}", length(car.vel));
             ImGui::Text(text.c_str());
             text = std::format("Angle {}", car.rotation);
             ImGui::Text(text.c_str());
-            ImGui::DragFloat("Car Speed", &car.speed, 1, 1.0f, 500.0f);
-            ImGui::DragFloat("Car Max Speed", &car.maxSpeed, 1, 10.0f, 500.0f);
-            ImGui::DragFloat("Turn Speed", &car.turnSpeed, 1, 50.0f, 500.0f);
+            ImGui::DragFloat("Car Speed", &car.speed, 0.25f, 0.0f, 500.0f);
+            ImGui::DragFloat("Turn Speed", &car.turnSpeed, 1, 00.0f, 500.0f);
             ImGui::DragFloat("Drag", &car.dragCo, 0.001f, 0.001f, 1.0f);
             if(ImGui::Button("Reset")) {
                 car.reset({ track.worldSegments[0].x + 35.0f , track.worldSegments[0].y});

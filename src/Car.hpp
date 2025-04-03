@@ -31,10 +31,9 @@ public:
 	vec2 vel;
 	vec2 acc;
 	bool hasCollided = false;
-	float turnSpeed = 165.0f;
-	float speed = 10.0f;
-	float maxSpeed = 15.0f;
-	float dragCo = 0.96f;
+	float turnSpeed = 50.0f;
+	float speed = 4.75f;
+	float dragCo = 0.98f;
 	float rotation;
 	Input input;
 

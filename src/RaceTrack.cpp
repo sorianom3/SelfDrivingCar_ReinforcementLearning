@@ -12,6 +12,7 @@ RaceTrack::RaceTrack(float width, float height) {
 
 	int checkPointCount = 9;
 	worldSegments = vector<vec4>(checkPointCount * 2);
+	checkpointSegments = vector<vec4>(checkPointCount);
 	auto worldVertices = vector<vec2>(checkPointCount * 2);
 
 	for (int i = 0; i < checkPointCount; i++) {
@@ -27,6 +28,12 @@ RaceTrack::RaceTrack(float width, float height) {
 		worldVertices[checkPointCount + i] = {
 			(tempRadiusX + 100.0f) * cosf(theta) + (width * 0.5f),
 			(tempRadiusY + 100.0f) * sinf(theta) + (height * 0.5f)
+		};
+		checkpointSegments[i] = {
+			worldVertices[i].x,
+			worldVertices[i].y,
+			worldVertices[checkPointCount + i].x,
+			worldVertices[checkPointCount + i].y,
 		};
 	}
 	int mid = worldVertices.size() / 2;
@@ -46,6 +53,7 @@ RaceTrack::RaceTrack(float width, float height) {
 		auto p2 = worldVertices[k];
 		worldSegments[i] = {p1.x, p1.y, p2.x, p2.y};
 	}
+
 }
 
 void RaceTrack::draw() {
@@ -53,6 +61,12 @@ void RaceTrack::draw() {
 
 		auto s = worldSegments[i];
 		DrawLine(s.x, s.y, s.z, s.w, WHITE);
+	}
+
+	for (int i = 0; i < checkpointSegments.size(); i++) {
+
+		auto s = checkpointSegments[i];
+		DrawLine(s.x, s.y, s.z, s.w, GREEN);
 	}
 }
 

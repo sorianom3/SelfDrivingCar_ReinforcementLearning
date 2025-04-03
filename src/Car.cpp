@@ -62,7 +62,11 @@ void Car::update(float dt) {
 		vel += acc;
 	}
 	acc *= 0.0f;
+
 	vel *= dragCo;
+	float zeroThreshold = 0.0001;
+	vel.x = (abs(vel.x) <= zeroThreshold) ? 0 : vel.x;
+	vel.y = (abs(vel.y) <= zeroThreshold) ? 0 : vel.y;
 	
 	//update hitbox
 	hitBox[0] = { pos.x - carBody.width * 0.5f, pos.y - carBody.height * 0.5f };

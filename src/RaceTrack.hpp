@@ -7,10 +7,11 @@ class RaceTrack
 {
 
 	public:
-		vector<vec2> innerPoints;
-		vector<vec2> outerPoints;
+		vector<vec4> worldSegments;
 		RaceTrack(float width, float height);
 		void draw();
+		
 		bool checkIfCarCollided(Car& car);
+
 };
  

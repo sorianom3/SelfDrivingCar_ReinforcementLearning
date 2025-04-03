@@ -16,7 +16,7 @@ const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 800;
 RaceTrack track(SCR_WIDTH, SCR_HEIGHT);
 Car car({ track.innerPoints[0].x + 35.0f , track.innerPoints[0].y });
-
+bool isPlaying = true;
 void simulate() {
     car.update(GetFrameTime());
     track.checkIfCarCollided(car);
@@ -54,6 +54,12 @@ void drawDebug() {
             }
             ImGui::EndTabItem();
         }
+        if (ImGui::BeginTabItem("Game Info")) {
+            ImGui::Checkbox("Pause", &isPlaying);
+            text = std::format("t1 {}\nt2 {}", car.view.x, car.view.y);
+            ImGui::Text(text.c_str());
+            ImGui::EndTabItem();
+        }
         ImGui::EndTabBar();
     }
     ImGui::End();
@@ -88,7 +94,7 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose()) {
         car.updateInput();
-        simulate();
+        if(isPlaying) simulate();
         render(mainCamera);
     }
 

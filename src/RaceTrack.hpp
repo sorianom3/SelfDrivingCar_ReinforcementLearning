@@ -11,6 +11,6 @@ class RaceTrack
 		vector<vec2> outerPoints;
 		RaceTrack(float width, float height);
 		void draw();
-		bool checkIfCarCollided(Car car);
+		bool checkIfCarCollided(Car& car);
 };
  

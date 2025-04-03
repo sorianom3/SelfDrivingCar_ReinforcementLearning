@@ -34,6 +34,8 @@ void drawDebug() {
             ImGui::Text(text.c_str());
             text = std::format("Velocity {}, {}", car.vel.x, car.vel.y);
             ImGui::Text(text.c_str());
+            text = std::format("Ray {}, {}", car.ray.x, car.ray.y);
+            ImGui::Text(text.c_str());
             text = std::format("Velocity Mag {}", length(car.vel));
             ImGui::Text(text.c_str());
             text = std::format("Angle {}", car.rotation);

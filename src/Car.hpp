@@ -30,6 +30,7 @@ public:
 	vec2 pos;
 	vec2 vel;
 	vec2 acc;
+	vec2 ray;
 	bool hasCollided = false;
 	float turnSpeed = 50.0f;
 	float speed = 4.75f;

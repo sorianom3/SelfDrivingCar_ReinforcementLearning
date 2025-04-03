@@ -35,9 +35,11 @@ void Car::draw() {
 	//DrawTexturePro(texture, src, carBody,{ carBody.width * 0.5f, carBody.height * 0.5f }, rotation,WHITE);
 
 	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rotation, (hasCollided) ? RED : GREEN);
-	auto hBox = getRotatedHitBox();
+
+	DrawLine(pos.x, pos.y, ray.x, ray.y, BLUE);
 
 	//DEBUG
+	//auto hBox = getRotatedHitBox();
 	//for (int i = 0; i < 4; i++) {
 	//	int k = (i == 3) ? 0 : i + 1;
 	//	DrawLine(hBox[i].x, hBox[i].y, hBox[k].x, hBox[k].y, (hasCollided) ? RED : GREEN);
@@ -70,6 +72,7 @@ void Car::update(float dt, vector<vec4> worldSegments) {
 	if (length(vel) <= zeroThreshold) {
 		vel = vec2(0.0f);
 	}
+	ray = closetRayhit(pos, dir, worldSegments);
 
 	//update hitbox
 	hitBox[0] = { pos.x - carBody.width * 0.5f, pos.y - carBody.height * 0.5f };

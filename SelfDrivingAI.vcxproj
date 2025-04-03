@@ -162,6 +162,7 @@
     <ClCompile Include="src\Car.cpp" />
     <ClCompile Include="Libraries\include\glm\detail\glm.cpp" />
     <ClCompile Include="src\SelfDrivingAI.cpp" />
+    <ClCompile Include="src\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Libraries\include\imgui\extras\FA6FreeSolidFontData.h" />
@@ -422,6 +423,7 @@
     <ClInclude Include="Libraries\include\glm\vec3.hpp" />
     <ClInclude Include="Libraries\include\glm\vec4.hpp" />
     <ClInclude Include="Libraries\include\glm\vector_relational.hpp" />
+    <ClInclude Include="src\Util.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

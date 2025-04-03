@@ -1,19 +1,6 @@
 #include "Car.hpp"
 #include <iostream>
-vec2 UP = { 0.0f, 1.0f };
-
-std::vector<vec2> rotatePoints(std::vector<vec2> points, vec2 rPoint, float angle) {
-
-	std::vector<vec2> output(points.size());
-	for (int i = 0; i < points.size(); i++) {
-		auto& p = points[i];
-		float x = ((p.x - rPoint.x) * cosf(radians(angle))) - ((p.y - rPoint.y) * sin(radians(angle))) + rPoint.x;
-		float y =  ((p.y - rPoint.y) * cosf(radians(angle))) + ((p.x - rPoint.x) * sinf(radians(angle))) + rPoint.y;
-		output[i].x = x;
-		output[i].y = y;
-	}
-	return output;
-}
+#include "Util.hpp"
 
 Car::Car(vec2 startingPoint) {
 	
@@ -47,13 +34,14 @@ void Car::draw() {
 	};
 	//DrawTexturePro(texture, src, carBody,{ carBody.width * 0.5f, carBody.height * 0.5f }, rotation,WHITE);
 
-	//DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rotation, (hasCollided)? RED : GREEN);
+	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rotation, (hasCollided)? RED : GREEN);
 	auto hBox = getRotatedHitBox();
 
-	for (int i = 0; i < 4; i++) {
-		int k = (i == 3) ? 0 : i + 1;
-		DrawLine(hBox[i].x, hBox[i].y, hBox[k].x, hBox[k].y, (hasCollided) ? RED : GREEN);
-	}
+	//DEBUG
+	//for (int i = 0; i < 4; i++) {
+	//	int k = (i == 3) ? 0 : i + 1;
+	//	DrawLine(hBox[i].x, hBox[i].y, hBox[k].x, hBox[k].y, (hasCollided) ? RED : GREEN);
+	//}
 }
 
 void Car::reset(vec2 point) {

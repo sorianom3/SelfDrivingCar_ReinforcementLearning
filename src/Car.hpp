@@ -12,7 +12,6 @@ private:
 		float drive;
 	};
 public:
-	vec2 view;
 	bool isAIControl = false;
 	Texture2D texture;
 

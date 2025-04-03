@@ -9,7 +9,7 @@ RaceTrack::RaceTrack(float width, float height) {
 	float radiusX = width * 0.25;
 	float radiusY = height * 0.25;
 
-	int checkPointCount = 9;
+	int checkPointCount = 15;
 	innerPoints = vector<vec2>(checkPointCount + 1);
 	outerPoints = vector<vec2>(checkPointCount + 1);
 
@@ -48,19 +48,18 @@ float cross2D(vec2 a, vec2 b) {
 	return a.x * b.y - a.y * b.x;
 }
 
-float slope(vec2 a, vec2 b) {
-	return (b.y - a.y) / (b.x - a.x);
-}
 bool RaceTrack::checkIfCarCollided(Car& car) {
 
 	bool isHit = false;
 	auto carHitBox = car.getRotatedHitBox();
-	//for (int i = 0; i < innerPoints.size() - 1; i++) {
-		int i = 0;
+	for (int i = 0; i < innerPoints.size() - 1; i++) {
 		auto a1 = innerPoints[i];
 		auto b1 = innerPoints[i + 1];
+		auto a2 = outerPoints[i];
+		auto b2 = outerPoints[i + 1];
+		
 		auto m1 = b1 - a1;
-		auto m2 = outerPoints[i] - outerPoints[i+1];
+		auto m2 = b2 - a2;
 		
 		for (int j = 0; j < carHitBox.size(); j++) {
 			int k = (j == carHitBox.size() - 1) ? 0 : j + 1;
@@ -68,16 +67,19 @@ bool RaceTrack::checkIfCarCollided(Car& car) {
 			auto d = carHitBox[k];
 			auto n = d - c;
 			
-			//check inner interection
-			float t2 = ((c.y - a1.y) * m1.x + (a1.x - c.x) * m1.y) / (m1.y * n.x - n.y * m1.x);
+			//check inner interections
+			float t2 = ((c.y - a1.y) * m1.x + (a1.x - c.x) * m1.y) / cross2D(n, m1);
 			float t1 = (c.x + n.x * t2 - a1.x) / m1.x;
 
-			car.view = vec2(t1, t2);
-			isHit = isHit || (t1 >= 0 && t2 >= 0 && t2 <= 1);
+			//check outer interections
+			float t2o = ((c.y - a2.y) * m2.x + (a2.x - c.x) * m2.y) / cross2D(n,m2);
+			float t1o = (c.x + n.x * t2o - a2.x) / m2.x;
 
+			isHit = isHit || (t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1);
+			isHit = isHit || (t1o >= 0 && t1o <= 1 && t2o >= 0 && t2o <= 1);
 			
 		}
-	//}
+	}
 	car.hasCollided = isHit;
 	return isHit;
 }

@@ -23,14 +23,14 @@ vec2 closetRayhit(vec2 startPoint, vec2 dir, vector<vec4> worldSegments) {
 		auto b = vec2(worldSegments[i].z, worldSegments[i].w);
 
 		auto m = b - a;
-		auto r = startPoint;
-		auto d = dir * 1000.0f;
-		auto n = d - r;
 
-		//check inner interections
-		float t2 = ((r.y - a.y) * m.x + (a.x - r.x) * m.y) / cross2D(n, m);
-		float t1 = (r.x + n.x * t2 - a.x) / m.x;
-		if (t1 >= 0 && t2 <= 1 && t1 >= 0) {
+		auto r = startPoint;
+		auto d = dir;
+
+		auto t2 = (d.x * (a.y - r.y) + dir.y * (r.x - a.x)) / (m.x * dir.y - m.y * dir.x);
+		auto t1 = (a.x + m.x * t2 - r.x) / dir.x;
+
+		if (t1 >= 0 && t2 >= 0 && t2 <= 1) {
 			minT = fminf(minT, t1);
 		}
 	}
@@ -38,5 +38,5 @@ vec2 closetRayhit(vec2 startPoint, vec2 dir, vector<vec4> worldSegments) {
 	//float t2 = ((c.y - a1.y) * m1.x + (a1.x - c.x) * m1.y) / cross2D(n, m1);
 	//float t1 = (c.x + n.x * t2 - a1.x) / m1.x;
 
-	return startPoint + (dir * minT * 1000.0f);
+	return startPoint + (dir * minT);
 }

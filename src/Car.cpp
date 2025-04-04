@@ -4,7 +4,7 @@
 
 Car::Car(vec2 startingPoint) {
 
-	texture = LoadTexture("../Assets/car.png");
+	//texture = LoadTexture("./Assets/car.png");
 
 	pos = startingPoint;
 	vel = { 0.0f,0.0f };
@@ -13,7 +13,7 @@ Car::Car(vec2 startingPoint) {
 	rotation = 90.0f;
 
 	hitBox = vector<vec2>(4);
-
+	ray = vec2(0.0f);
 
 }
 
@@ -72,7 +72,7 @@ void Car::update(float dt, vector<vec4> worldSegments) {
 	if (length(vel) <= zeroThreshold) {
 		vel = vec2(0.0f);
 	}
-	ray = closetRayhit(pos, dir, worldSegments);
+	ray = closetRayhit(pos, normalize(vel), worldSegments);
 
 	//update hitbox
 	hitBox[0] = { pos.x - carBody.width * 0.5f, pos.y - carBody.height * 0.5f };
@@ -86,7 +86,7 @@ void Car::update(float dt, vector<vec4> worldSegments) {
 void Car::checkCollideWithWall(vector<vec4> worldSegments) {
 	auto carHitBox = getRotatedHitBox();
 	hasCollided = false;
-	for (int i = 0; i < worldSegments.size() - 1; i++) {
+	for (int i = 0; i < worldSegments.size(); i++) {
 		auto a = vec2(worldSegments[i].x, worldSegments[i].y);
 		auto b = vec2(worldSegments[i].z, worldSegments[i].w);
 

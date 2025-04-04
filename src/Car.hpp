@@ -14,7 +14,10 @@ private:
 		float turn;
 		float drive;
 	};
-
+	struct VisionData {
+		vector<vec2> FOVRays;
+		vector<vec2> ROVRays;
+	};
 public:
 	bool isAIControl = false;
 	Texture2D texture;

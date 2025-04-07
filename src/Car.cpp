@@ -2,7 +2,11 @@
 #include <iostream>
 #include "Util.hpp"
 
-Car::Car(vec2 startingPoint) {
+Car::Car(vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints) {
+
+	//Setup FFN
+	//FFN<MeanSquaredErr
+
 
 	//texture = LoadTexture("./Assets/car.png");
 
@@ -10,16 +14,24 @@ Car::Car(vec2 startingPoint) {
 	vel = { 0.0f,0.0f };
 	acc = { 0.0f,0.0f };
 	input = { 0.0f,0.0f };
-	rotation = 90.0f;
+	rot = 90.0f;
 
+	checkPointRay = vec2(0.0f);
+	velocityRay = vec2(0.0f);
 	hitBox = vector<vec2>(4);
-	ray = vec2(0.0f);
-
+	hitBoxRays = vector<vec2>(4);
+	data = {
+		vec2(0.0f),
+		0.0f,
+		vector<float>(4),
+		0.0f
+	};
+	reset(startingPoint, world, checkpoints);
 }
 
 vector<vec2> Car::getRotatedHitBox() {
 
-	return rotatePoints(hitBox, pos, rotation);
+	return rotatePoints(hitBox, pos, rot);
 }
 
 
@@ -34,9 +46,12 @@ void Car::draw() {
 	};
 	//DrawTexturePro(texture, src, carBody,{ carBody.width * 0.5f, carBody.height * 0.5f }, rotation,WHITE);
 
-	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rotation, (hasCollided) ? RED : GREEN);
+	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rot, (hasCollided) ? RED : GREEN);
 
-	DrawLine(pos.x, pos.y, ray.x, ray.y, BLUE);
+	DrawLine(pos.x, pos.y, velocityRay.x, velocityRay.y, BLUE);
+	DrawLine(pos.x, pos.y, checkPointRay.x, checkPointRay.y, PURPLE);
+	for (int i = 0; i < hitBoxRays.size();i++)
+		DrawLine(pos.x, pos.y, hitBoxRays[i].x, hitBoxRays[i].y, ORANGE);
 
 	//DEBUG
 	//auto hBox = getRotatedHitBox();
@@ -46,17 +61,18 @@ void Car::draw() {
 	//}
 }
 
-void Car::reset(vec2 point) {
+void Car::reset(vec2 point, vector<vec4> worldSegments, vector<vec4> checkPoints) {
 	pos = point;
-	vel *= 0.0f;
-	rotation = 0;
+	vel = vec2(0.0f);
+	rot = 90.0f;
+	updateData(worldSegments,checkPoints);
 }
 
 void Car::update(float dt, vector<vec4> worldSegments) {
 
-	rotation += (input.turn * length(vel) * turnSpeed * dt);
-	rotation = fmodf(rotation, 360.0f);
-	float pheta = radians(rotation);
+	rot += (input.turn * length(vel) * turnSpeed * dt);
+	rot = fmodf(rot, 360.0f);
+	float pheta = rot *  3.1415 / 180.0f;
 	vec2 dir = { cosf(pheta),sinf(pheta) };
 
 	float thrust = input.drive;
@@ -68,20 +84,37 @@ void Car::update(float dt, vector<vec4> worldSegments) {
 	acc *= 0.0f;
 
 	vel *= dragCo;
-	float zeroThreshold = 0.015 * speed* reverseReduction;
+	float zeroThreshold = 0.015 * speed * reverseReduction;
 	if (length(vel) <= zeroThreshold) {
 		vel = vec2(0.0f);
 	}
-	ray = closetRayhit(pos, normalize(vel), worldSegments);
 
 	//update hitbox
 	hitBox[0] = { pos.x - carBody.width * 0.5f, pos.y - carBody.height * 0.5f };
 	hitBox[1] = { pos.x + carBody.width * 0.5f, pos.y - carBody.height * 0.5f };
 	hitBox[2] = { pos.x + carBody.width * 0.5f, pos.y + carBody.height * 0.5f };
 	hitBox[3] = { pos.x - carBody.width * 0.5f, pos.y + carBody.height * 0.5f };
-
+	
 	checkCollideWithWall(worldSegments);
+	
 }
+
+void Car::updateData(vector<vec4> worldSegments, vector<vec4> checkPoints) {
+	data.position = pos;
+	data.speed = length(vel);
+	auto hBox = getRotatedHitBox();
+	for (int i = 0; i < data.distToWall.size(); i++) {
+		vec2 pointTo = normalize(hBox[i] - pos);
+		data.distToWall[i] = length(hitBoxRays[i] - pos);
+		hitBoxRays[i] = closetRayhit(pos, normalize(pointTo), worldSegments);
+	}
+	float pheta = rot * 3.1415 / 180.0f;
+	vec2 dir = { cosf(pheta),sinf(pheta) };
+	velocityRay = closetRayhit(pos, normalize(vel), worldSegments);
+	checkPointRay = closetRayhit(pos, normalize(dir), checkPoints);
+	data.distToCheckPoint = length(checkPointRay - pos);
+}
+
 
 void Car::checkCollideWithWall(vector<vec4> worldSegments) {
 	auto carHitBox = getRotatedHitBox();
@@ -110,11 +143,6 @@ void Car::checkCollideWithWall(vector<vec4> worldSegments) {
 	}
 }
 void Car::updateInput() {
-	if (isAIControl) {
-
-	}
-	else {
-		input.drive = IsKeyDown(KEY_W) - IsKeyDown(KEY_S);
-		input.turn = IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
-	}
+	input.drive = IsKeyDown(KEY_W) - IsKeyDown(KEY_S);
+	input.turn = IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
 }

@@ -3,10 +3,11 @@
 vector<vec2> rotatePoints(vector<vec2> points, vec2 rPoint, float angle) {
 
 	vector<vec2> output(points.size());
+	float rads = radians(angle);
 	for (int i = 0; i < points.size(); i++) {
 		auto& p = points[i];
-		float x = ((p.x - rPoint.x) * cosf(radians(angle))) - ((p.y - rPoint.y) * sin(radians(angle))) + rPoint.x;
-		float y = ((p.y - rPoint.y) * cosf(radians(angle))) + ((p.x - rPoint.x) * sinf(radians(angle))) + rPoint.y;
+		float x = ((p.x - rPoint.x) * cosf(rads)) - ((p.y - rPoint.y) * sin(rads)) + rPoint.x;
+		float y = ((p.y - rPoint.y) * cosf(rads)) + ((p.x - rPoint.x) * sinf(rads)) + rPoint.y;
 		output[i].x = x;
 		output[i].y = y;
 	}

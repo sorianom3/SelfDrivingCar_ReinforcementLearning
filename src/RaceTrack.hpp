@@ -11,7 +11,10 @@ class RaceTrack
 	public:
 		vector<vec4> worldSegments;
 		vector<vec4> checkpointSegments;
+		
 		RaceTrack(float width, float height);
+
+		RaceTrack() : RaceTrack(100.0f, 100.0f) {};
 		void draw();
 
 };

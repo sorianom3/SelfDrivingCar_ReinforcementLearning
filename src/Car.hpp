@@ -15,8 +15,10 @@ private:
 		float drive;
 	};
 	struct VisionData {
-		vector<vec2> FOVRays;
-		vector<vec2> ROVRays;
+		vec2 position; // 2
+		float speed; // 1
+		vector<float> distToWall;
+		float distToCheckPoint;
 	};
 public:
 	bool isAIControl = false;
@@ -33,21 +35,34 @@ public:
 	vec2 pos;
 	vec2 vel;
 	vec2 acc;
-	vec2 ray;
+	vector<vec2> hitBoxRays;
+	vec2 checkPointRay;
+	vec2 velocityRay;
+	
 	bool hasCollided = false;
 	float turnSpeed = 50.0f;
 	float speed = 4.75f;
 	float dragCo = 0.98f;
-	float rotation;
+	float rot = 90.0f;
+
 	Input input;
+	VisionData data;
 
+	Car() : Car(
+		{ 0.0f,0.0f }, 
+		vector<vec4>(0), 
+		vector<vec4>(0)
+	) 
+	{};
 
-	Car(vec2 startingPoint);
+	Car(vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints);
 	void draw();
 	void updateInput();
 	void update(float dt, vector<vec4> worldSegments);
+	void updateData(vector<vec4> worldSegments, vector<vec4> checkPoints);
 	void checkCollideWithWall(vector<vec4> worldSegments);
-	void reset(vec2 point);
+	void reset(vec2 point, vector<vec4> worldSegments, vector<vec4> checkPoints);
+
 	vector<vec2> getRotatedHitBox();
 
 };

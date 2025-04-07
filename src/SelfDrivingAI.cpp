@@ -1,26 +1,32 @@
 // SelfDrivingAI.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
 #include <iostream>
 #include <imgui/imgui.h>
 #include <imgui/rlImGui.h>
 #include <imgui/imgui_stdlib.h>
 #include <raylib.h>
-#include "Car.hpp"
-#include "RaceTrack.hpp"
+#include "CarTrackEnv.hpp"
 #include <string>
 #include <format>
+
+
 
 //GAME Variable
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 800;
 
 RaceTrack track(SCR_WIDTH, SCR_HEIGHT);
-Car car({ track.worldSegments[0].x + 35.0f , track.worldSegments[0].y });
+Car car(
+    { track.worldSegments[0].x + 35.0f , track.worldSegments[0].y - 50 },
+    track.worldSegments,
+    track.checkpointSegments
+    );
 bool isPlaying = true;
+
 
 void simulate() {
     car.update(GetFrameTime(), track.worldSegments);
+    car.updateData(track.worldSegments, track.checkpointSegments);
 }
 
 void drawDebug() {
@@ -30,22 +36,19 @@ void drawDebug() {
     std::string text;
     if (ImGui::BeginTabBar("scene##left_tabs_bar")) {
         if (ImGui::BeginTabItem("Car Info")) {
-            text = std::format("Position {}, {}", car.pos.x, car.pos.y);
+            text = std::format("Position {}, {} Angle {}", car.pos.x, car.pos.y, car.rot);
             ImGui::Text(text.c_str());
-            text = std::format("Velocity {}, {}", car.vel.x, car.vel.y);
+            text = std::format("Velocity {}, {}, Mag {}", car.vel.x, car.vel.y, length(car.vel));
             ImGui::Text(text.c_str());
-            text = std::format("Ray {}, {}", car.ray.x, car.ray.y);
+            text = std::format("dist to checkpoint {}", car.data.distToCheckPoint);
             ImGui::Text(text.c_str());
-            text = std::format("Velocity Mag {}", length(car.vel));
-            ImGui::Text(text.c_str());
-            text = std::format("Angle {}", car.rotation);
-            ImGui::Text(text.c_str());
-            ImGui::DragFloat("Car Speed", &car.speed, 0.25f, 0.0f, 500.0f);
-            ImGui::DragFloat("Turn Speed", &car.turnSpeed, 1, 00.0f, 500.0f);
-            ImGui::DragFloat("Drag", &car.dragCo, 0.001f, 0.001f, 1.0f);
+
             if(ImGui::Button("Reset")) {
-                car.reset({ track.worldSegments[0].x + 35.0f , track.worldSegments[0].y});
-                car.rotation = 90;
+                car.reset(
+                    { track.worldSegments[0].x + 35.0f , track.worldSegments[0].y - 50},
+                    track.worldSegments,
+                    track.checkpointSegments
+                );
             }
             ImGui::EndTabItem();
         }
@@ -67,15 +70,7 @@ void drawDebug() {
 }
 
 void render(Camera2D mainCamera) {
-    BeginDrawing();
-    BeginMode2D(mainCamera);
-
-    ClearBackground(BLACK);
-    car.draw();
-    track.draw();
-    EndMode2D();
-    drawDebug();
-    EndDrawing();
+    
 }
 
 
@@ -92,10 +87,52 @@ int main(void)
     rlImGuiSetup(true);
     ImGui::GetStyle().ScaleAllSizes(2);
     // Main game loop
+    //test Q-learning
+    
+
+    FFN<MeanSquaredError, GaussianInitialization> network(MeanSquaredError(), GaussianInitialization(0, 0.001));
+    network.Add<Linear>(128);
+    network.Add<ReLU>();
+    network.Add<Linear>(128);
+    network.Add<ReLU>();
+    network.Add<Linear>(4); // 4 actions
+
+    SimpleDQN<> model(network);
+
+    GreedyPolicy<CarTrackEnv> policy(1.0, 1000, 0.1, 0.99);
+
+    RandomReplay<CarTrackEnv> replay(10, 1000);
+
+    TrainingConfig config;
+    config.StepSize() = 0.001;
+    config.Discount() = 0.95;
+    config.TargetNetworkSyncInterval() = 100;
+    config.ExplorationSteps() = 1000;
+    config.DoubleQLearning() = true;
+    config.StepLimit() = 200; // Max steps per episode
+ 
+    QLearning<CarTrackEnv, decltype(model), AdamUpdate, decltype(policy)> agent(config, model, policy, replay);
+    CarTrackEnv* env = &agent.Environment();
     while (!WindowShouldClose()) {
-        car.updateInput();
-        if(isPlaying) simulate();
-        render(mainCamera);
+
+
+        //car.updateInput();
+        //if(isPlaying) simulate();
+        
+        auto episode = agent.Episode();
+
+        
+        BeginDrawing();
+        BeginMode2D(mainCamera);
+
+        ClearBackground(BLACK);
+
+
+        env->track.draw();
+        env->car.draw();
+        EndMode2D();
+        drawDebug();
+        EndDrawing();
     }
 
     rlImGuiShutdown();

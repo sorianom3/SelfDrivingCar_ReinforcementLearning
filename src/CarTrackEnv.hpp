@@ -58,7 +58,7 @@ public:
 	RaceTrack track;
 	Car car;
 
-	State state;
+	State curState;
 
 	CarTrackEnv();
 
@@ -69,7 +69,6 @@ public:
 
 	State InitialSample(); // start State with Car vars
 	void SyncData();
-	std::tuple<State, double, bool>  Step(const Action& action);
 	bool IsTerminal(const State& state);
 	double Reward(const State& state, const Action& action);
 

@@ -18,6 +18,7 @@ private:
 		vec2 position; // 2
 		float speed; // 1
 		vector<float> distToWall;
+		float timeAlive;
 		float distToCheckPoint;
 	};
 public:
@@ -40,6 +41,8 @@ public:
 	vec2 velocityRay;
 	
 	bool hasCollided = false;
+	bool hasReachCheckpoint = false;
+	bool checkpointTouched = false;
 	float turnSpeed = 50.0f;
 	float speed = 4.75f;
 	float dragCo = 0.98f;
@@ -58,9 +61,10 @@ public:
 	Car(vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints);
 	void draw();
 	void updateInput();
-	void update(float dt, vector<vec4> worldSegments);
+	void update(float dt, vector<vec4> worldSegments, vector<vec4> checkPoints);
 	void updateData(vector<vec4> worldSegments, vector<vec4> checkPoints);
 	void checkCollideWithWall(vector<vec4> worldSegments);
+	void checkReachCheckpoint(vector<vec4> worldCheckpoints);
 	void reset(vec2 point, vector<vec4> worldSegments, vector<vec4> checkPoints);
 
 	vector<vec2> getRotatedHitBox();

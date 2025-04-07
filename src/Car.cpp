@@ -24,7 +24,8 @@ Car::Car(vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints) {
 		vec2(0.0f),
 		0.0f,
 		vector<float>(4),
-		0.0f
+		0.0f,
+		0.0f,
 	};
 	reset(startingPoint, world, checkpoints);
 }
@@ -68,9 +69,9 @@ void Car::reset(vec2 point, vector<vec4> worldSegments, vector<vec4> checkPoints
 	updateData(worldSegments,checkPoints);
 }
 
-void Car::update(float dt, vector<vec4> worldSegments) {
+void Car::update(float dt, vector<vec4> worldSegments, vector<vec4> checkPoints) {
 
-	rot += (input.turn * length(vel) * turnSpeed * dt);
+	rot += (input.turn * turnSpeed * dt);
 	rot = fmodf(rot, 360.0f);
 	float pheta = rot *  3.1415 / 180.0f;
 	vec2 dir = { cosf(pheta),sinf(pheta) };
@@ -96,10 +97,11 @@ void Car::update(float dt, vector<vec4> worldSegments) {
 	hitBox[3] = { pos.x - carBody.width * 0.5f, pos.y + carBody.height * 0.5f };
 	
 	checkCollideWithWall(worldSegments);
-	
+	checkReachCheckpoint(checkPoints);
 }
 
 void Car::updateData(vector<vec4> worldSegments, vector<vec4> checkPoints) {
+	data.timeAlive++;
 	data.position = pos;
 	data.speed = length(vel);
 	auto hBox = getRotatedHitBox();
@@ -115,6 +117,43 @@ void Car::updateData(vector<vec4> worldSegments, vector<vec4> checkPoints) {
 	data.distToCheckPoint = length(checkPointRay - pos);
 }
 
+void Car::checkReachCheckpoint(vector<vec4> worldCheckpoints) {
+	auto carHitBox = getRotatedHitBox();
+	bool rCheck = false;
+	for (int i = 0; i < worldCheckpoints.size(); i++) {
+		auto a = vec2(worldCheckpoints[i].x, worldCheckpoints[i].y);
+		auto b = vec2(worldCheckpoints[i].z, worldCheckpoints[i].w);
+
+		auto m = b - a;
+
+		for (int j = 0; j < carHitBox.size(); j++) {
+			int k = (j == carHitBox.size() - 1) ? 0 : j + 1;
+			auto c = carHitBox[j];
+			auto d = carHitBox[k];
+			auto n = d - c;
+
+			//check inner interections
+			float t2 = ((c.y - a.y) * m.x + (a.x - c.x) * m.y) / cross2D(n, m);
+			float t1 = (c.x + n.x * t2 - a.x) / m.x;
+
+			rCheck = rCheck || (t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1);
+
+			if (rCheck) break;
+		}
+		if (rCheck) break;
+	}
+	if (rCheck && !checkpointTouched) {
+		hasReachCheckpoint = true;      // Only true on first frame of collision
+		checkpointTouched = true;       // We're now inside the checkpoint
+	}
+	else {
+		hasReachCheckpoint = false;     // False after the first frame
+	}
+
+	if (!rCheck) {
+		checkpointTouched = false;      // Reset when no longer touching
+	}
+}
 
 void Car::checkCollideWithWall(vector<vec4> worldSegments) {
 	auto carHitBox = getRotatedHitBox();

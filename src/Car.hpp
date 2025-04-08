@@ -43,11 +43,12 @@ public:
 	bool hasCollided = false;
 	bool hasReachCheckpoint = false;
 	bool checkpointTouched = false;
+	bool collisionTouched = false;
 	float turnSpeed = 50.0f;
 	float speed = 4.75f;
 	float dragCo = 0.98f;
 	float rot = 90.0f;
-
+	Color color = GREEN;
 	Input input;
 	VisionData data;
 
@@ -58,7 +59,8 @@ public:
 	) 
 	{};
 
-	Car(vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints);
+	Car(vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints) : Car(GREEN, startingPoint, world, checkpoints) {};
+	Car(Color c, vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints);
 	void draw();
 	void updateInput();
 	void update(float dt, vector<vec4> worldSegments, vector<vec4> checkPoints);

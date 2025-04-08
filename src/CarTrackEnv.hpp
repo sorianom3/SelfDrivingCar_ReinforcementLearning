@@ -41,14 +41,18 @@ public:
 			BACKWARD = 1,
 			LEFT = 2,
 			RIGHT = 3,
+			FR = 4,
+			FL= 5,
+			BR = 6,
+			BL = 7,
 		};
 		Action::actions action;
-		static const size_t size = 4;
+		static const size_t size = 8;
 	};
 
 	size_t stepCount = 0;
 	size_t maxSteps = 200;
-	static constexpr size_t actionSize = 4;
+	static constexpr size_t actionSize = 8;
 	static constexpr size_t stateSize = 8;
 
 	bool crashed;
@@ -71,6 +75,5 @@ public:
 	void SyncData();
 	bool IsTerminal(const State& state);
 	double Reward(const State& state, const Action& action);
-
 };
 

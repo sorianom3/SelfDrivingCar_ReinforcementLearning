@@ -1,15 +1,8 @@
 #include "Car.hpp"
 #include <iostream>
 #include "Util.hpp"
-
-Car::Car(vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints) {
-
-	//Setup FFN
-	//FFN<MeanSquaredErr
-
-
-	//texture = LoadTexture("./Assets/car.png");
-
+Car::Car(Color c, vec2 startingPoint, vector<vec4> world, vector<vec4> checkpoints) {
+	color = c;
 	pos = startingPoint;
 	vel = { 0.0f,0.0f };
 	acc = { 0.0f,0.0f };
@@ -47,7 +40,7 @@ void Car::draw() {
 	};
 	//DrawTexturePro(texture, src, carBody,{ carBody.width * 0.5f, carBody.height * 0.5f }, rotation,WHITE);
 
-	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rot, (hasCollided) ? RED : GREEN);
+	DrawRectanglePro(carBody, { carBody.width * 0.5f, carBody.height * 0.5f }, rot, (hasCollided) ? RED : color);
 
 	DrawLine(pos.x, pos.y, velocityRay.x, velocityRay.y, BLUE);
 	DrawLine(pos.x, pos.y, checkPointRay.x, checkPointRay.y, PURPLE);
@@ -71,7 +64,7 @@ void Car::reset(vec2 point, vector<vec4> worldSegments, vector<vec4> checkPoints
 
 void Car::update(float dt, vector<vec4> worldSegments, vector<vec4> checkPoints) {
 
-	rot += (input.turn * turnSpeed * dt);
+	rot += (input.turn * length(vel) * turnSpeed * dt);
 	rot = fmodf(rot, 360.0f);
 	float pheta = rot *  3.1415 / 180.0f;
 	vec2 dir = { cosf(pheta),sinf(pheta) };
@@ -157,7 +150,7 @@ void Car::checkReachCheckpoint(vector<vec4> worldCheckpoints) {
 
 void Car::checkCollideWithWall(vector<vec4> worldSegments) {
 	auto carHitBox = getRotatedHitBox();
-	hasCollided = false;
+	bool isHit = false;
 	for (int i = 0; i < worldSegments.size(); i++) {
 		auto a = vec2(worldSegments[i].x, worldSegments[i].y);
 		auto b = vec2(worldSegments[i].z, worldSegments[i].w);
@@ -174,11 +167,22 @@ void Car::checkCollideWithWall(vector<vec4> worldSegments) {
 			float t2 = ((c.y - a.y) * m.x + (a.x - c.x) * m.y) / cross2D(n, m);
 			float t1 = (c.x + n.x * t2 - a.x) / m.x;
 
-			hasCollided = hasCollided || (t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1);
+			isHit = isHit || (t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1);
 
-			if (hasCollided) break;
+			if (isHit) break;
 		}
-		if (hasCollided) break;
+		if (isHit) break;
+	}
+	if (isHit && !collisionTouched) {
+		hasCollided = true;      // Only true on first frame of collision
+		collisionTouched = true;       // We're now inside the checkpoint
+	}
+	else {
+		hasCollided = false;     // False after the first frame
+	}
+
+	if (!isHit) {
+		collisionTouched = false;      // Reset when no longer touching
 	}
 }
 void Car::updateInput() {

@@ -7,17 +7,17 @@ float randFloat(float min, float max) {
 }
 RaceTrack::RaceTrack(float width, float height) {
 	srand(0);
-	float radiusX = width * 0.25;
+	float radiusX = width * 0.30;
 	float radiusY = height * 0.25;
 
-	int checkPointCount = 9;
+	int checkPointCount = 15;
 	worldSegments = vector<vec4>(checkPointCount * 2);
 	checkpointSegments = vector<vec4>(checkPointCount);
 	auto worldVertices = vector<vec2>(checkPointCount * 2);
 
 	for (int i = 0; i < checkPointCount; i++) {
 		float theta = (i * PI * 2) / checkPointCount;
-		float irregularity = 0.57f;
+		float irregularity = 0.3f;
 		float tempRadiusX = radiusX + (randFloat(-70.0f, 70.0f) * irregularity * 2 - irregularity);
 		float tempRadiusY = radiusY + (randFloat(-70.0f, 70.0f) * irregularity * 2 - irregularity);
 		

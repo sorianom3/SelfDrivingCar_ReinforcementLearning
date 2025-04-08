@@ -38,6 +38,8 @@ vec2 closetRayhit(vec2 startPoint, vec2 dir, vector<vec4> worldSegments) {
 
 	//float t2 = ((c.y - a1.y) * m1.x + (a1.x - c.x) * m1.y) / cross2D(n, m1);
 	//float t1 = (c.x + n.x * t2 - a1.x) / m1.x;
-
+	if (minT == INT16_MAX) {
+		return vec2(NAN,NAN);
+	}
 	return startPoint + (dir * minT);
 }

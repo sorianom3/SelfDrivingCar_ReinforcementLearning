@@ -12,32 +12,14 @@
 
 
 //GAME Variable
-const int SCR_WIDTH = 800;
+const int SCR_WIDTH = 1000;
 const int SCR_HEIGHT = 800;
 
-RaceTrack track(SCR_WIDTH, SCR_HEIGHT);
-Car car(
-	{ track.worldSegments[0].x + 35.0f , track.worldSegments[0].y - 50 },
-	track.worldSegments,
-	track.checkpointSegments
-);
-bool isPlaying = true;
-
-
-void simulate() {
-	car.update(GetFrameTime(), track.worldSegments, track.checkpointSegments);
-	car.updateData(track.worldSegments, track.checkpointSegments);
-}
-
-void drawDebug() {
-	
-}
-
-void render(Camera2D mainCamera) {
-
-}
-
-void WriteRewardsToCSV(const std::vector<double>& rewards, const std::string& filename) {
+struct csvData {
+	double reward;
+	double epsilon;
+};
+void WriteRewardsToCSV(const std::vector<csvData>& rewards, const std::string& filename) {
 	std::ofstream file(filename, std::ios::out);  // `std::ios::out` creates or overwrites the file
 
 	if (!file.is_open()) {
@@ -46,11 +28,11 @@ void WriteRewardsToCSV(const std::vector<double>& rewards, const std::string& fi
 	}
 
 	// CSV header
-	file << "Episode,TotalReward\n";
+	file << "Episode,TotalReward,Epsilon\n";
 
 	// Write episode number and reward
 	for (size_t i = 0; i < rewards.size(); ++i) {
-		file << i << "," << rewards[i] << "\n";
+		file << i << "," << rewards[i].reward << "," << rewards[i].epsilon << "\n";
 	}
 
 	file.close();
@@ -65,7 +47,7 @@ int main(void)
 	Camera2D mainCamera = { { SCR_WIDTH * 0.5f,SCR_HEIGHT * 0.5f }, { SCR_WIDTH * 0.5f,SCR_HEIGHT * 0.5f }, 0, 1 };
 
 	//We use this because in for scope we do not need to maximize the amount of frame we render at we can change this later
-	//SetTargetFPS(60);
+	SetTargetFPS(60);
 
 	rlImGuiSetup(true);
 	ImGui::GetStyle().ScaleAllSizes(2);
@@ -78,28 +60,38 @@ int main(void)
 	network.Add<ReLU>();
 	network.Add<Linear>(128);
 	network.Add<ReLU>();
-	network.Add<Linear>(4); // 4 actions
+	network.Add<Linear>(8); // 8 actions
 
 	SimpleDQN<> model(network);
 
-	GreedyPolicy<CarTrackEnv> policy(1.0, 1000, 0.1, 0.99);
+	GreedyPolicy<CarTrackEnv> policy(1.0, 100, 0.05, 0.995);
 	
-	RandomReplay<CarTrackEnv> replay(10, 1000);
+	RandomReplay<CarTrackEnv> replay(32, 10000);
 
 	TrainingConfig config;
 	config.StepSize() = 0.01;
 	config.Discount() = 0.95;
 	config.TargetNetworkSyncInterval() = 100;
-	config.ExplorationSteps() = 1000;
+	config.ExplorationSteps() = 100;
 	config.DoubleQLearning() = true;
-	config.StepLimit() = 200; // Max steps per episode
+	config.StepLimit() = 1000; // Max steps per episode
 
 	QLearning<CarTrackEnv, decltype(model), AdamUpdate, decltype(policy)> agent(config, model, policy, replay);
 	CarTrackEnv* env = &agent.Environment();
 	arma::running_stat<double> averageReturn;
 	double totalReward = 0.0;
 	int cycle = 100;
-	vector<double> episodeRewards;
+	vector <csvData> episodeRewards;
+	double bestReward = 0;
+
+	Car car(
+		GRAY,
+		{ env->track.worldSegments[0].x + 35.0f , env->track.worldSegments[0].y - 50 },
+		env->track.worldSegments,
+		env->track.checkpointSegments
+	);
+	bool showPlayer = false;
+	vector<csvData> curRewards;
 	while (!WindowShouldClose()) {
 
 		CarTrackEnv::State nextState;
@@ -110,11 +102,20 @@ int main(void)
 		replay.Store(env->curState, action, reward, nextState, env->IsTerminal(nextState), config.Discount());
 		agent.TrainAgent();
 		env->curState = nextState;
-
+		
+		curRewards.push_back({ reward, static_cast<double>(action.action) });
 		if (env->IsTerminal(env->curState)) {
-			cout << "episode has Ended\n\n";
-			std::cout << "Reward: " << totalReward << std::endl;
-			episodeRewards.push_back(totalReward);
+			
+			if (bestReward <= totalReward) {
+				WriteRewardsToCSV(curRewards, "Episode Rewards and Action.csv");
+				policy.Anneal();
+				bestReward = totalReward;
+			}
+			curRewards.clear();
+			cout << "episode has Ended\n";
+			auto epsilon = policy.Epsilon();
+			std::cout << "Reward: " << totalReward  << " " << epsilon << "\n\n";
+			episodeRewards.push_back({ totalReward, epsilon });
 			totalReward = 0;
 			env->InitialSample();
 		}
@@ -127,7 +128,14 @@ int main(void)
 		BeginMode2D(mainCamera);
 
 		ClearBackground(BLACK);
-
+#pragma region
+		if (showPlayer) {
+			car.updateInput();
+			car.update(GetFrameTime(), env->track.worldSegments, env->track.checkpointSegments);
+			car.updateData(env->track.worldSegments, env->track.checkpointSegments);
+			car.draw();
+		}
+#pragma endregion Draw Player
 		env->car.draw();
 		env->track.draw();
 		EndMode2D();
@@ -138,6 +146,7 @@ int main(void)
 		std::string text;
 		if (ImGui::BeginTabBar("scene##left_tabs_bar")) {
 			if (ImGui::BeginTabItem("Car Info")) {
+				
 				text = std::format("Position {}, {} Angle {}", env->car.pos.x, env->car.pos.y, env->car.rot);
 				ImGui::Text(text.c_str());
 				text = std::format("Velocity {}, {}, Mag {}", env->car.vel.x, env->car.vel.y, length(env->car.vel));
@@ -155,6 +164,7 @@ int main(void)
 				if (ImGui::Button("Save Episodes' Rewards")) {
 					WriteRewardsToCSV(episodeRewards, "episode_rewards.csv");
 				}
+				ImGui::Checkbox("Show Player", &showPlayer);
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();
@@ -163,7 +173,7 @@ int main(void)
 		rlImGuiEnd();
 #pragma endregion Debug Menu
 		EndDrawing();
-		if (episodeRewards.size() > 400) {
+		if (policy.Epsilon() <= 0.1) {
 			break;
 		}
 	}

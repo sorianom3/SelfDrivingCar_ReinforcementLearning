@@ -3,14 +3,15 @@ import Simulation from "./Scenes/Simulation";
 
 const config : Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  parent: "phaser-container",
-  width: 800,
-  height: 800,
   backgroundColor: "#000000",
   title: "Self Driving AI",
   scale: {
       mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH
+      parent: 'phaser-container',
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: window.innerWidth,
+      height: window.innerHeight,
+
   },
   scene: [
     Simulation

@@ -48,7 +48,6 @@ export default class Car extends Phaser.GameObjects.GameObject {
             x: this.car.pos.y,
             y: this.car.pos.y
         }, true);
-        this.carSprite.setOrigin(0.7);
         this.wallLine = this.scene.make.graphics({}, true);
     }
 
@@ -75,7 +74,7 @@ export default class Car extends Phaser.GameObjects.GameObject {
         let dir = new Math.Vector2(cos(theta), sin(theta));
         dir.normalize();
         let thrust = (drive < 0) ? -0.25 : drive;
-        this.car.acc = dir.scale(thrust * _dt * this.car.maxSpeed);
+        this.car.acc = dir.clone().scale(thrust * _dt * this.car.maxSpeed);
 
         this.car.vel.add(this.car.acc);
         this.car.pos.add(this.car.vel);
@@ -91,10 +90,16 @@ export default class Car extends Phaser.GameObjects.GameObject {
         let rect = this.carSprite.getBounds();
         let rectPoint = Phaser.Geom.Rectangle.PerimeterPoint(rect, this.car.rotation);
 
-        console.log(this.car.vel.length());
         
         let hitPoint = rayHit(new Math.Vector2(rectPoint.x, rectPoint.y), dir, this.trackData.segments);
-        this.wallLine.setPosition(this.car.pos.x,this.car.pos.x);
+        this.wallLine.clear();
+        this.line.x1 = rectPoint.x;
+        this.line.y1 = rectPoint.y;
+        this.line.x2 = hitPoint.x;
+        this.line.y2 = hitPoint.y;
+        this.wallLine
+            .lineStyle(3,0x0000FF)
+            .strokeLineShape(this.line);
     }
 
     checkHitWall(): boolean {

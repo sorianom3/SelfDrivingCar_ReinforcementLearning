@@ -1,8 +1,8 @@
 import * as Phaser from 'phaser';
 import Track from './Track';
 import { Math } from 'phaser'
-import { cos, sin, abs, rotate } from 'mathjs'
-import { rayHit } from '../Utils';
+import { abs } from 'mathjs'
+import { rayHit, rayHits } from '../Utils';
 
 export type CarData = {
     pos: Math.Vector2,
@@ -13,6 +13,14 @@ export type CarData = {
     rotation: number;
 }
 
+export type VisionData = {
+    wallDist: number[],
+    goalDist: number
+    speed: number
+    position: Math.Vector2
+};
+
+const GOAL = 8;
 export default class Car extends Phaser.GameObjects.GameObject {
 
     public carInput: { drive: number, turn: number } = { drive: 0, turn: 0 };
@@ -24,15 +32,26 @@ export default class Car extends Phaser.GameObjects.GameObject {
         dragCoefficient: 0.98,
         rotation: 90
     }
+    public visionData: VisionData = {
+        wallDist: [],
+        goalDist: Number.MAX_VALUE,
+        speed: 0,
+        position: this.car.pos
+    };
     private trackData: Track;
     private turnSpeed = 140;
     private carSprite: Phaser.GameObjects.Sprite;
-    private line = new Phaser.Geom.Line();
-    private wallLine: Phaser.GameObjects.Graphics;
+    private lines: Phaser.Geom.Line[] = [];
+    private lineGraphics: Phaser.GameObjects.Graphics;
     constructor(scene: Phaser.Scene, track: Track) {
         super(scene, 'Car');
         this.trackData = track;
         //create texture
+        //init lines
+        this.lineGraphics = this.scene.make.graphics({}, true);
+        for (let i = 0; i < 9; i++) {
+            this.lines.push(new Phaser.Geom.Line());
+        }
         const textureKey = 'white-rect';
         let graphic = this.scene.add.graphics()
             .fillStyle(0xFFFFFF, 1.0)
@@ -44,11 +63,13 @@ export default class Car extends Phaser.GameObjects.GameObject {
         this.car.pos.x = this.trackData.checkpoints[0].x1 + 20;
         this.car.pos.y = this.trackData.checkpoints[0].y1 - 40;
         this.carSprite = scene.make.sprite({
-            key: textureKey,
+            key: 'car',
             x: this.car.pos.y,
             y: this.car.pos.y
         }, true);
-        this.wallLine = this.scene.make.graphics({}, true);
+        //vision data
+        this.updateVisionData();
+
     }
 
     collectPlayerInput() {
@@ -65,13 +86,23 @@ export default class Car extends Phaser.GameObjects.GameObject {
     collectAIInput() {
         //TODO Set NN to insert Input here
     }
-
+    updateVisionData() {
+        
+        this.visionData.goalDist = Phaser.Geom.Line.Length(this.lines[GOAL]);
+        this.visionData.position = this.car.pos;
+        this.visionData.speed = this.car.vel.length();
+        for (let i = 0; i < 8; i++) {
+            this.visionData.wallDist[i] = Phaser.Geom.Line.Length(this.lines[i]);
+        }
+        //console.log(this.visionData);
+        
+    }
     update(_dt: number): void {
         const { drive, turn } = this.carInput;
-        this.car.rotation += turn * (this.car.vel.length() * 1.25) * this.turnSpeed * _dt;
+        this.car.rotation += turn * (this.car.vel.length()) * this.turnSpeed * _dt;
         this.car.rotation = this.car.rotation % 360;
         let theta = Math.DEG_TO_RAD * this.car.rotation;
-        let dir = new Math.Vector2(cos(theta), sin(theta));
+        let dir = Math.Vector2.UP.clone().setAngle(theta)//new Math.Vector2(cos(theta), sin(theta));
         dir.normalize();
         let thrust = (drive < 0) ? -0.25 : drive;
         this.car.acc = dir.clone().scale(thrust * _dt * this.car.maxSpeed);
@@ -88,20 +119,50 @@ export default class Car extends Phaser.GameObjects.GameObject {
         this.carSprite.setAngle(this.car.rotation);
 
         let rect = this.carSprite.getBounds();
-        let rectPoint = Phaser.Geom.Rectangle.PerimeterPoint(rect, this.car.rotation);
+        this.lineGraphics.clear();
 
+        for (let i = 0; i < 8; i++) {
+            let angle = (i * Math.PI2) / 8;
+
+            //let rectPoint = Phaser.Geom.Rectangle.PerimeterPoint(rect, angle );
+            let hit = rayHit(this.car.pos, Math.Vector2.UP.clone().setAngle(angle), this.trackData.segments);
+            this.lines[i].x1 = this.car.pos.x;
+            this.lines[i].y1 = this.car.pos.y;
+            this.lines[i].x2 = hit.x;
+            this.lines[i].y2 = hit.y;
+            this.lineGraphics
+                .lineStyle(3, 0xFF0000)
+                .strokeLineShape(this.lines[i]);
+        }
+        //GOAL LINE
+        let rectPoint = Phaser.Geom.Rectangle.PerimeterPoint(rect, this.car.rotation);
+        let hitPoint = rayHit(Math.Vector2.ZERO.clone().set(rectPoint.x, rectPoint.y), dir, this.trackData.checkpoints);
+
+        this.lines[GOAL].x1 = rectPoint.x;
+        this.lines[GOAL].y1 = rectPoint.y;
+        this.lines[GOAL].x2 = hitPoint.x;
+        this.lines[GOAL].y2 = hitPoint.y;
+        this.lineGraphics
+            .lineStyle(3, 0x0000FF)
+            .strokeLineShape(this.lines[GOAL]);
         
-        let hitPoint = rayHit(new Math.Vector2(rectPoint.x, rectPoint.y), dir, this.trackData.segments);
-        this.wallLine.clear();
-        this.line.x1 = rectPoint.x;
-        this.line.y1 = rectPoint.y;
-        this.line.x2 = hitPoint.x;
-        this.line.y2 = hitPoint.y;
-        this.wallLine
-            .lineStyle(3,0x0000FF)
-            .strokeLineShape(this.line);
+        this.updateVisionData();
+
+
     }
 
+    checkOffTrack(): boolean {
+        let isOffTrack = true;
+        for (let i = 0; i < 4; i++) {
+            let angle = (i * Math.PI2) / 4;
+
+            let hits = rayHits(this.car.pos, Math.Vector2.UP.clone().setAngle(angle), this.trackData.segments);
+            
+            isOffTrack = isOffTrack && (hits.length % 2 == 0);
+
+        }
+        return isOffTrack;
+    }
     checkHitWall(): boolean {
         let isHit = false;
         this.trackData.segments.forEach(line => {

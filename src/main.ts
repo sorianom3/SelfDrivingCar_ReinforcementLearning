@@ -5,6 +5,10 @@ const config : Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   backgroundColor: "#000000",
   title: "Self Driving AI",
+  fps: {
+    limit: 60,
+    smoothStep: true
+  },
   scale: {
       mode: Phaser.Scale.FIT,
       parent: 'phaser-container',

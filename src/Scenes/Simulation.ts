@@ -6,6 +6,10 @@ export default class Simulation extends Phaser.Scene {
 
     car : Car | undefined;
     track : Track | undefined;
+    
+    preload(){
+        this.load.image({key: "car",url: 'carSprite.png'});
+    }
     create(){
         this.track = new Track(this);
         this.car = new Car(this, this.track);

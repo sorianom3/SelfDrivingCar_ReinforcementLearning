@@ -16,7 +16,7 @@ export function rayHit(startPoint : Math.Vector2, dir : Math.Vector2, lines : Ph
             minT = min(minT, t1);
         }
     });
-    hit = startPoint.add(dir.scale(minT));
+    hit = startPoint.clone().add(dir.clone().scale(minT));
     return hit;
 }
 
@@ -26,8 +26,8 @@ export function rayHits(startPoint : Math.Vector2, dir : Math.Vector2, lines : P
         let a = new Math.Vector2(line.x1, line.y1);
         let b = new Math.Vector2(line.x2, line.y2);
         
-        let r = startPoint;
-        let d = dir;
+        let r = startPoint.clone();
+        let d = dir.clone();
         let m = b.subtract(a);
         let t2 = (dir.x * (a.y - r.y) + dir.y * (r.x - a.x)) / (m.x * dir.y - m.y * dir.x);
         let t1 = (a.x + m.x * t2 - r.x) / dir.x;

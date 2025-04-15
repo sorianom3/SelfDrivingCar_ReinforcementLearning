@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import Track from './Track';
 import { Math } from 'phaser'
-import { cos, sin, abs, rotate, log } from 'mathjs'
+import { abs } from 'mathjs'
 import { rayHit, rayHits } from '../Utils';
 
 export type CarData = {
@@ -87,12 +87,15 @@ export default class Car extends Phaser.GameObjects.GameObject {
         //TODO Set NN to insert Input here
     }
     updateVisionData() {
+        
         this.visionData.goalDist = Phaser.Geom.Line.Length(this.lines[GOAL]);
         this.visionData.position = this.car.pos;
         this.visionData.speed = this.car.vel.length();
         for (let i = 0; i < 8; i++) {
             this.visionData.wallDist[i] = Phaser.Geom.Line.Length(this.lines[i]);
         }
+        //console.log(this.visionData);
+        
     }
     update(_dt: number): void {
         const { drive, turn } = this.carInput;
@@ -142,6 +145,9 @@ export default class Car extends Phaser.GameObjects.GameObject {
         this.lineGraphics
             .lineStyle(3, 0x0000FF)
             .strokeLineShape(this.lines[GOAL]);
+        
+        this.updateVisionData();
+
 
     }
 

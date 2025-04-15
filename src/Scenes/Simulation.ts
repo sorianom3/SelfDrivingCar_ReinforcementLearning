@@ -13,11 +13,13 @@ export default class Simulation extends Phaser.Scene {
     create(){
         this.track = new Track(this);
         this.car = new Car(this, this.track);
+        
 
     }
     
     update(_time: number, _delta: number): void {
         this.car?.collectPlayerInput();
         this.car?.update(_delta * 0.001);
+
     }
 }

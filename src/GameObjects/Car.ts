@@ -39,7 +39,7 @@ export default class Car extends Phaser.GameObjects.GameObject {
         position: this.car.pos
     };
     private trackData: Track;
-    private turnSpeed = 140;
+    private turnSpeed = 65;
     private carSprite: Phaser.GameObjects.Sprite;
     private lines: Phaser.Geom.Line[] = [];
     private lineGraphics: Phaser.GameObjects.Graphics;
@@ -94,14 +94,14 @@ export default class Car extends Phaser.GameObjects.GameObject {
         for (let i = 0; i < 8; i++) {
             this.visionData.wallDist[i] = Phaser.Geom.Line.Length(this.lines[i]);
         }
-        //console.log(this.visionData);
+        console.log(this.visionData);
         
     }
     update(_dt: number): void {
         const { drive, turn } = this.carInput;
         this.car.rotation += turn * (this.car.vel.length()) * this.turnSpeed * _dt;
         this.car.rotation = this.car.rotation % 360;
-        let theta = Math.DEG_TO_RAD * this.car.rotation;
+        let theta = (3.1415 / 180) * this.car.rotation;
         let dir = Math.Vector2.UP.clone().setAngle(theta)//new Math.Vector2(cos(theta), sin(theta));
         dir.normalize();
         let thrust = (drive < 0) ? -0.25 : drive;
@@ -131,7 +131,7 @@ export default class Car extends Phaser.GameObjects.GameObject {
             this.lines[i].x2 = hit.x;
             this.lines[i].y2 = hit.y;
             this.lineGraphics
-                .lineStyle(3, 0xFF0000)
+                .lineStyle(2, 0xFF0000)
                 .strokeLineShape(this.lines[i]);
         }
         //GOAL LINE
@@ -143,7 +143,7 @@ export default class Car extends Phaser.GameObjects.GameObject {
         this.lines[GOAL].x2 = hitPoint.x;
         this.lines[GOAL].y2 = hitPoint.y;
         this.lineGraphics
-            .lineStyle(3, 0x0000FF)
+            .lineStyle(2, 0x0000FF)
             .strokeLineShape(this.lines[GOAL]);
         
         this.updateVisionData();
